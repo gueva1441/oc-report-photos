@@ -253,6 +253,16 @@ async function cleanup() {
 const app = express();
 app.disable('x-powered-by');
 
+// Funciona igual si el proxy entrega /photos/... (dominio con ruta) o ya sin el prefijo.
+const BASE_PATH = (process.env.BASE_PATH || '/photos').replace(/\/+$/, '');
+app.use((req, res, next) => {
+  if (BASE_PATH && (req.url === BASE_PATH || req.url.startsWith(BASE_PATH + '/') || req.url.startsWith(BASE_PATH + '?'))) {
+    req.url = req.url.slice(BASE_PATH.length) || '/';
+    if (req.url.startsWith('?')) req.url = '/' + req.url;
+  }
+  next();
+});
+
 app.get('/health', (req, res) => res.type('text/plain').send('ok'));
 
 app.post('/warm', express.json({ limit: '10kb' }), async (req, res) => {
