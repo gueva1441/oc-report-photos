@@ -265,6 +265,14 @@ app.use((req, res, next) => {
 
 app.get('/health', (req, res) => res.type('text/plain').send('ok'));
 
+// Link corto para el SMS de los cleaners: /t/1791342038 → formulario de subir fotos (Task Portal)
+app.get('/t/:num', (req, res) => {
+  const num = String(req.params.num || '');
+  if (!/^\d{6,15}$/.test(num)) return res.sendStatus(404);
+  res.set('Cache-Control', 'no-store');
+  res.redirect(302, `${GAS_URL}?task_id=TSK-${num}`);
+});
+
 app.post('/warm', express.json({ limit: '10kb' }), async (req, res) => {
   if (!safeEqual(req.get('X-Warm-Token') || '', WARM_TOKEN)) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
